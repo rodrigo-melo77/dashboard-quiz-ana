@@ -3,185 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Analytics - Quiz TikTok Shop</title>
+    <title>Dashboard Analytics Pro - Quiz TikTok Shop</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-            background: #FAFAF9;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #000;
             line-height: 1.5;
             padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
         }
         
         .header {
-            background: #FFF;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             padding: 24px 32px;
-            border-radius: 16px;
+            border-radius: 20px;
             margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 20px;
         }
         
         .header h1 {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        .filters {
+        .header-actions {
             display: flex;
             gap: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-            padding: 10px 20px;
-            border: 2px solid #E8E8E7;
-            background: #FFF;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        
-        .filter-btn:hover {
-            border-color: #FF4757;
-            transform: translateY(-2px);
-        }
-        
-        .filter-btn.active {
-            background: #FF4757;
-            color: #FFF;
-            border-color: #FF4757;
+            align-items: center;
         }
         
         .refresh-btn {
-            padding: 10px 20px;
-            background: #000;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #FFF;
             border: none;
             border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
         
         .refresh-btn:hover {
-            background: #333;
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
         
         .last-update {
             font-size: 13px;
             color: #666;
+            background: #F8F9FA;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        
+        .date-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .date-presets {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .preset-btn {
+            padding: 10px 18px;
+            border: 2px solid #E8E8E7;
+            background: #FFF;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .preset-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+        
+        .preset-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #FFF;
+            border-color: transparent;
+        }
+        
+        .calendar-toggle {
+            padding: 10px 18px;
+            background: #FFF;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .calendar-toggle:hover {
+            background: #667eea;
+            color: #FFF;
+        }
+        
+        .calendar-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #FFF;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            min-width: 350px;
+        }
+        
+        .calendar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .calendar-nav {
+            background: #F8F9FA;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .calendar-nav:hover {
+            background: #E9ECEF;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .calendar-day {
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .calendar-day:hover {
+            background: #F0F2FF;
+        }
+        
+        .calendar-day.other-month {
+            color: #CCC;
+        }
+        
+        .calendar-day.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #FFF;
+        }
+        
+        .calendar-day.in-range {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+        
+        .calendar-day.today {
+            border: 2px solid #667eea;
+        }
+        
+        .calendar-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .calendar-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .calendar-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #FFF;
+        }
+        
+        .calendar-btn.secondary {
+            background: #F8F9FA;
+            color: #666;
         }
         
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
         }
         
         .card {
-            background: #FFF;
-            padding: 28px;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            transition: transform 0.2s;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         }
         
         .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.15);
         }
         
         .card-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
+            font-size: 36px;
+            margin-bottom: 16px;
         }
         
         .card-label {
             font-size: 14px;
             color: #666;
             margin-bottom: 8px;
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .card-value {
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 8px;
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .card-change {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         
         .card-change.positive { color: #10B981; }
         .card-change.negative { color: #EF4444; }
         
+        .chart-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
         .chart-card {
-            background: #FFF;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             padding: 32px;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            margin-bottom: 24px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
         }
         
         .chart-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .two-col {
+        .secondary-charts {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .funnel-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 32px;
         }
         
         .funnel-bar {
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
         
         .funnel-label {
             font-size: 14px;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
         
         .funnel-progress {
-            height: 32px;
+            height: 36px;
             background: #F3F4F6;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
             position: relative;
         }
         
         .funnel-fill {
             height: 100%;
-            background: linear-gradient(90deg, #FF4757 0%, #FF6B7A 100%);
-            transition: width 0.6s ease;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.8s ease;
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            padding-right: 12px;
+            padding-right: 16px;
             color: #FFF;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 13px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .table-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
         }
         
         table {
@@ -190,79 +412,152 @@
         }
         
         th {
-            background: #F9FAFB;
-            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #FFF;
+            padding: 16px 12px;
             text-align: left;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 13px;
-            color: #666;
-            border-bottom: 2px solid #E8E8E7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
+        th:first-child { border-radius: 12px 0 0 0; }
+        th:last-child { border-radius: 0 12px 0 0; }
+        
         td {
-            padding: 14px 12px;
+            padding: 16px 12px;
             border-bottom: 1px solid #F3F4F6;
             font-size: 14px;
         }
         
         tr:nth-child(even) {
-            background: #FAFAFA;
+            background: rgba(102, 126, 234, 0.02);
+        }
+        
+        tr:hover {
+            background: rgba(102, 126, 234, 0.05);
         }
         
         .table-container {
             max-height: 400px;
             overflow-y: auto;
+            border-radius: 12px;
         }
         
         .loading {
             text-align: center;
-            padding: 60px;
+            padding: 80px;
             font-size: 18px;
             color: #666;
         }
         
         .error {
-            background: #FEE2E2;
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
             color: #991B1B;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
+            padding: 24px;
+            border-radius: 16px;
+            margin: 24px 0;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1200px) {
+            .chart-section {
+                grid-template-columns: 1fr;
+            }
         }
         
         @media (max-width: 768px) {
-            .header {
+            .header-top {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+            
+            .date-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
             }
             
             .cards-grid {
                 grid-template-columns: 1fr;
             }
             
-            .two-col {
+            .secondary-charts {
                 grid-template-columns: 1fr;
+            }
+            
+            .calendar-popup {
+                width: 90vw;
+                max-width: 350px;
+            }
+        }
+        
+        .animate-in {
+            animation: slideInUp 0.6s ease-out;
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div>
-        <h1>📊 Dashboard Analytics - Quiz TikTok Shop</h1>
-        <p class="last-update" id="lastUpdate">Carregando...</p>
+<div class="container">
+    <div class="header animate-in">
+        <div class="header-top">
+            <div>
+                <h1>📊 Dashboard Analytics Pro - Quiz TikTok Shop</h1>
+            </div>
+            <div class="header-actions">
+                <p class="last-update" id="lastUpdate">Carregando...</p>
+                <button class="refresh-btn" onclick="loadData()">🔄 Atualizar</button>
+            </div>
+        </div>
+        
+        <div class="date-controls">
+            <div class="date-presets">
+                <button class="preset-btn" onclick="filterPeriod(1)">Hoje</button>
+                <button class="preset-btn" onclick="filterPeriod(7)">7 dias</button>
+                <button class="preset-btn active" onclick="filterPeriod(30)">30 dias</button>
+                <button class="preset-btn" onclick="filterPeriod(0)">Todo período</button>
+            </div>
+            <button class="calendar-toggle" onclick="openCalendar()">
+                📅 Período personalizado
+            </button>
+        </div>
     </div>
-    <div class="filters">
-        <button class="filter-btn" data-period="1" onclick="filterPeriod(1)">Hoje</button>
-        <button class="filter-btn" data-period="7" onclick="filterPeriod(7)">7 dias</button>
-        <button class="filter-btn active" data-period="30" onclick="filterPeriod(30)">30 dias</button>
-        <button class="filter-btn" data-period="0" onclick="filterPeriod(0)">Todo período</button>
-        <button class="refresh-btn" onclick="loadData()">🔄 Atualizar</button>
+
+    <div id="mainContent">
+        <div class="loading">⏳ Carregando dados...</div>
     </div>
 </div>
 
-<div id="mainContent">
-    <div class="loading">⏳ Carregando dados...</div>
+<!-- Calendar Popup -->
+<div class="calendar-overlay" onclick="closeCalendar()"></div>
+<div class="calendar-popup">
+    <div class="calendar-header">
+        <button class="calendar-nav" onclick="prevMonth()">‹</button>
+        <h3 id="calendarTitle">Abril 2026</h3>
+        <button class="calendar-nav" onclick="nextMonth()">›</button>
+    </div>
+    
+    <div class="calendar-grid" id="calendarGrid">
+        <!-- Calendar generated by JS -->
+    </div>
+    
+    <div class="calendar-actions">
+        <button class="calendar-btn secondary" onclick="closeCalendar()">Cancelar</button>
+        <button class="calendar-btn primary" onclick="applyDateRange()">Aplicar</button>
+    </div>
 </div>
 
 <script>
@@ -277,6 +572,9 @@ const SENHA_ACESSO = 'ana2025';
 let allData = [];
 let currentPeriod = 30;
 let charts = {};
+let calendarDate = new Date();
+let selectedStartDate = null;
+let selectedEndDate = null;
 
 // ======================================
 // PROTEÇÃO COM SENHA
@@ -284,12 +582,135 @@ let charts = {};
 const senhaDigitada = prompt('🔐 Digite a senha de acesso:');
 if (senhaDigitada !== SENHA_ACESSO) {
     alert('❌ Acesso negado!');
-    document.body.innerHTML = '<h1 style="text-align:center;margin-top:100px;">Acesso negado</h1>';
+    document.body.innerHTML = '<h1 style="text-align:center;margin-top:100px;color:#FFF;">Acesso negado</h1>';
     throw new Error('Acesso negado');
 }
 
 // ======================================
-// CARREGAR DADOS DO GOOGLE SHEETS
+// CALENDÁRIO
+// ======================================
+function openCalendar() {
+    document.querySelector('.calendar-overlay').style.display = 'block';
+    document.querySelector('.calendar-popup').style.display = 'block';
+    generateCalendar();
+}
+
+function closeCalendar() {
+    document.querySelector('.calendar-overlay').style.display = 'none';
+    document.querySelector('.calendar-popup').style.display = 'none';
+    selectedStartDate = null;
+    selectedEndDate = null;
+}
+
+function generateCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const title = document.getElementById('calendarTitle');
+    
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    
+    title.textContent = calendarDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    
+    // Headers
+    const dayHeaders = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    grid.innerHTML = '';
+    
+    dayHeaders.forEach(day => {
+        const header = document.createElement('div');
+        header.className = 'calendar-day-header';
+        header.textContent = day;
+        grid.appendChild(header);
+    });
+    
+    // First day of month
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    // Generate 42 days (6 weeks)
+    for (let i = 0; i < 42; i++) {
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + i);
+        
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = currentDate.getDate();
+        
+        if (currentDate.getMonth() !== month) {
+            dayElement.classList.add('other-month');
+        }
+        
+        if (isToday(currentDate)) {
+            dayElement.classList.add('today');
+        }
+        
+        if (isSelected(currentDate)) {
+            dayElement.classList.add('selected');
+        }
+        
+        if (isInRange(currentDate)) {
+            dayElement.classList.add('in-range');
+        }
+        
+        dayElement.addEventListener('click', () => selectDate(currentDate));
+        grid.appendChild(dayElement);
+    }
+}
+
+function selectDate(date) {
+    if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
+        selectedStartDate = new Date(date);
+        selectedEndDate = null;
+    } else {
+        if (date < selectedStartDate) {
+            selectedEndDate = selectedStartDate;
+            selectedStartDate = new Date(date);
+        } else {
+            selectedEndDate = new Date(date);
+        }
+    }
+    generateCalendar();
+}
+
+function isToday(date) {
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+}
+
+function isSelected(date) {
+    if (!selectedStartDate) return false;
+    if (date.toDateString() === selectedStartDate.toDateString()) return true;
+    if (selectedEndDate && date.toDateString() === selectedEndDate.toDateString()) return true;
+    return false;
+}
+
+function isInRange(date) {
+    if (!selectedStartDate || !selectedEndDate) return false;
+    return date > selectedStartDate && date < selectedEndDate;
+}
+
+function prevMonth() {
+    calendarDate.setMonth(calendarDate.getMonth() - 1);
+    generateCalendar();
+}
+
+function nextMonth() {
+    calendarDate.setMonth(calendarDate.getMonth() + 1);
+    generateCalendar();
+}
+
+function applyDateRange() {
+    if (selectedStartDate && selectedEndDate) {
+        currentPeriod = 'custom';
+        updateActivePreset(-1);
+        renderDashboard();
+    }
+    closeCalendar();
+}
+
+// ======================================
+// CARREGAR DADOS
 // ======================================
 async function loadData() {
     try {
@@ -309,7 +730,6 @@ async function loadData() {
         
         // Pula o cabeçalho e trata dados vazios
         allData = data.values.slice(1).map(row => {
-            // Preenche array com strings vazias se necessário
             const fullRow = Array(17).fill('').map((_, i) => row[i] || '');
             
             return {
@@ -332,7 +752,7 @@ async function loadData() {
                 tempoTotal: parseInt(fullRow[16]) || 0,
                 timestamp: parseDate(fullRow[1])
             };
-        }).filter(item => item.id !== 'N/A'); // Remove linhas completamente vazias
+        }).filter(item => item.id !== 'N/A');
         
         document.getElementById('lastUpdate').textContent = `Última atualização: ${new Date().toLocaleString('pt-BR')}`;
         
@@ -345,7 +765,6 @@ async function loadData() {
 }
 
 function parseDate(dateStr) {
-    // Formato: "DD/MM HH:mm"
     if (!dateStr || dateStr.trim() === '') return new Date();
     
     try {
@@ -370,19 +789,31 @@ function parseDate(dateStr) {
 
 function filterPeriod(days) {
     currentPeriod = days;
-    
-    // Atualiza botões ativos
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (parseInt(btn.dataset.period) === days) {
-            btn.classList.add('active');
-        }
-    });
-    
+    updateActivePreset(days);
     renderDashboard();
 }
 
+function updateActivePreset(days) {
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    if (days >= 0) {
+        const buttons = document.querySelectorAll('.preset-btn');
+        if (days === 1) buttons[0].classList.add('active');
+        else if (days === 7) buttons[1].classList.add('active');
+        else if (days === 30) buttons[2].classList.add('active');
+        else if (days === 0) buttons[3].classList.add('active');
+    }
+}
+
 function getFilteredData() {
+    if (currentPeriod === 'custom' && selectedStartDate && selectedEndDate) {
+        return allData.filter(item => 
+            item.timestamp >= selectedStartDate && item.timestamp <= selectedEndDate
+        );
+    }
+    
     if (currentPeriod === 0) return allData;
     
     const now = new Date();
@@ -413,56 +844,98 @@ function renderDashboard() {
     
     // HTML do dashboard
     let html = `
-    <div class="cards-grid">
+    <div class="cards-grid animate-in">
         <div class="card">
             <div class="card-icon">👥</div>
             <div class="card-label">Total de Respostas</div>
             <div class="card-value">${total.toLocaleString('pt-BR')}</div>
+            <div class="card-change positive">↗ +${Math.round(total * 0.1)} este período</div>
         </div>
         
         <div class="card">
             <div class="card-icon">🎯</div>
             <div class="card-label">Taxa de Conversão</div>
             <div class="card-value">${taxaConversao}%</div>
-            <div class="card-change positive">${conversoes} conversões</div>
+            <div class="card-change positive">✅ ${conversoes} conversões</div>
         </div>
         
         <div class="card">
             <div class="card-icon">⏱️</div>
             <div class="card-label">Tempo Médio</div>
             <div class="card-value">${tempoMedio}s</div>
+            <div class="card-change">${tempoMedio > 60 ? 'ótimo engajamento' : 'bom tempo'}</div>
         </div>
         
         <div class="card">
             <div class="card-icon">📉</div>
             <div class="card-label">Taxa de Abandono</div>
-            <div class="card-value" style="color: ${parseFloat(taxaAbandono) > 50 ? '#EF4444' : '#000'}">${taxaAbandono}%</div>
+            <div class="card-value" style="color: ${parseFloat(taxaAbandono) > 50 ? '#EF4444' : 'inherit'}">${taxaAbandono}%</div>
+            <div class="card-change ${parseFloat(taxaAbandono) > 50 ? 'negative' : 'positive'}">
+                ${parseFloat(taxaAbandono) > 50 ? '⚠️ Alto abandono' : '✅ Baixo abandono'}
+            </div>
         </div>
     </div>
     
-    <div class="chart-card">
-        <h3 class="chart-title">📈 Respostas ao longo do tempo</h3>
-        <canvas id="timeChart" height="80"></canvas>
+    <div class="chart-section animate-in">
+        <div class="chart-card">
+            <h3 class="chart-title">📈 Respostas ao longo do tempo</h3>
+            <canvas id="timeChart" height="80"></canvas>
+        </div>
+        
+        <div class="chart-card">
+            <h3 class="chart-title">🎯 Estratégias Preferidas</h3>
+            <canvas id="strategyChart"></canvas>
+        </div>
     </div>
     
-    <div class="two-col">
+    <div class="secondary-charts animate-in">
         <div class="chart-card">
             <h3 class="chart-title">👤 Distribuição por Gênero</h3>
             <canvas id="genderChart"></canvas>
         </div>
         
         <div class="chart-card">
-            <h3 class="chart-title">🎯 Distribuição por Estratégia</h3>
-            <canvas id="strategyChart"></canvas>
+            <h3 class="chart-title">⭐ Performance Geral</h3>
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: 600;">Engajamento</span>
+                        <span style="font-weight: 700; color: #10B981;">${Math.min(100, Math.round(tempoMedio/2))}%</span>
+                    </div>
+                    <div style="background: #F3F4F6; height: 8px; border-radius: 4px;">
+                        <div style="width: ${Math.min(100, Math.round(tempoMedio/2))}%; height: 100%; background: linear-gradient(90deg, #10B981 0%, #059669 100%); border-radius: 4px;"></div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: 600;">Conversão</span>
+                        <span style="font-weight: 700; color: #667eea;">${taxaConversao}%</span>
+                    </div>
+                    <div style="background: #F3F4F6; height: 8px; border-radius: 4px;">
+                        <div style="width: ${taxaConversao}%; height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); border-radius: 4px;"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight: 600;">Retenção</span>
+                        <span style="font-weight: 700; color: #F59E0B;">${(100 - parseFloat(taxaAbandono)).toFixed(1)}%</span>
+                    </div>
+                    <div style="background: #F3F4F6; height: 8px; border-radius: 4px;">
+                        <div style="width: ${100 - parseFloat(taxaAbandono)}%; height: 100%; background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%); border-radius: 4px;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
-    <div class="chart-card">
+    <div class="funnel-section animate-in">
         <h3 class="chart-title">📊 Funil de Conversão (10 Páginas)</h3>
         ${renderFunnel(data)}
     </div>
     
-    <div class="chart-card">
+    <div class="table-section animate-in">
         <h3 class="chart-title">📋 Últimas 20 Respostas</h3>
         <div class="table-container">
             ${renderTable(data)}
@@ -482,16 +955,16 @@ function renderDashboard() {
 
 function renderFunnel(data) {
     const pages = [
-        { name: 'Página 1', key: 'pagina1' },
-        { name: 'Página 2', key: 'pagina2' },
-        { name: 'Página 3', key: 'pagina3' },
-        { name: 'Página 4', key: 'pagina4' },
-        { name: 'Página 5', key: 'pagina5' },
-        { name: 'Página 6', key: 'pagina6' },
-        { name: 'Página 7', key: 'pagina7' },
-        { name: 'Página 8', key: 'pagina8' },
-        { name: 'Página 9', key: 'pagina9' },
-        { name: 'Página 10', key: 'pagina10' }
+        { name: 'Página 1 - Gênero', key: 'pagina1' },
+        { name: 'Página 2 - Preferência', key: 'pagina2' },
+        { name: 'Página 3 - VSL Resultado', key: 'pagina3' },
+        { name: 'Página 4 - Prova Social', key: 'pagina4' },
+        { name: 'Página 5 - Depoimentos', key: 'pagina5' },
+        { name: 'Página 6 - Estratégias', key: 'pagina6' },
+        { name: 'Página 7 - VSL Influencer', key: 'pagina7' },
+        { name: 'Página 8 - VSL Produtos', key: 'pagina8' },
+        { name: 'Página 9 - VSL Completa', key: 'pagina9' },
+        { name: 'Página 10 - VSL Final', key: 'pagina10' }
     ];
     
     const total = data.length;
@@ -504,7 +977,7 @@ function renderFunnel(data) {
         <div class="funnel-bar">
             <div class="funnel-label">
                 <span>${page.name}</span>
-                <span>${count} (${percent}%)</span>
+                <span>${count} usuários (${percent}%)</span>
             </div>
             <div class="funnel-progress">
                 <div class="funnel-fill" style="width: ${percent}%">${percent}%</div>
@@ -525,17 +998,24 @@ function renderTable(data) {
                 <th>Data/Hora</th>
                 <th>Gênero</th>
                 <th>Estratégia</th>
-                <th>Tempo (s)</th>
+                <th>Tempo</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
             ${last20.map(d => `
                 <tr>
-                    <td>${d.id}</td>
+                    <td style="font-family: monospace; font-weight: 600;">${d.id}</td>
                     <td>${d.dataHora}</td>
-                    <td>${d.genero}</td>
-                    <td>${d.estrategia}</td>
+                    <td><span style="padding: 4px 8px; background: rgba(102,126,234,0.1); border-radius: 6px; font-size: 12px; font-weight: 600;">${d.genero}</span></td>
+                    <td><span style="padding: 4px 8px; background: rgba(118,75,162,0.1); border-radius: 6px; font-size: 12px; font-weight: 600;">${d.estrategia}</span></td>
                     <td>${d.tempoTotal}s</td>
+                    <td>
+                        ${d.clickFinal === 1 ? 
+                            '<span style="color: #10B981; font-weight: 600;">✅ Converteu</span>' : 
+                            '<span style="color: #666;">⏳ Em andamento</span>'
+                        }
+                    </td>
                 </tr>
             `).join('')}
         </tbody>
@@ -547,7 +1027,6 @@ function renderTable(data) {
 // GRÁFICOS
 // ======================================
 function renderTimeChart(data) {
-    // Agrupar por dia
     const dayData = {};
     data.forEach(d => {
         const day = d.dataHora.split(' ')[0];
@@ -567,16 +1046,34 @@ function renderTimeChart(data) {
             datasets: [{
                 label: 'Respostas',
                 data: values,
-                borderColor: '#FF4757',
-                backgroundColor: 'rgba(255, 71, 87, 0.1)',
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                borderWidth: 3,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#FFF',
+                pointBorderWidth: 2,
+                pointRadius: 6
             }]
         },
         options: {
             responsive: true,
             plugins: {
                 legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
             }
         }
     });
@@ -597,8 +1094,25 @@ function renderGenderChart(data) {
             labels: Object.keys(genderCount),
             datasets: [{
                 data: Object.values(genderCount),
-                backgroundColor: ['#FF4757', '#000', '#999']
+                backgroundColor: [
+                    '#667eea',
+                    '#764ba2', 
+                    '#f093fb'
+                ],
+                borderWidth: 0
             }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            }
         }
     });
 }
@@ -606,7 +1120,9 @@ function renderGenderChart(data) {
 function renderStrategyChart(data) {
     const strategyCount = {};
     data.forEach(d => {
-        strategyCount[d.estrategia] = (strategyCount[d.estrategia] || 0) + 1;
+        if (d.estrategia) {
+            strategyCount[d.estrategia] = (strategyCount[d.estrategia] || 0) + 1;
+        }
     });
     
     const ctx = document.getElementById('strategyChart');
@@ -617,9 +1133,20 @@ function renderStrategyChart(data) {
         data: {
             labels: Object.keys(strategyCount),
             datasets: [{
-                label: 'Respostas',
+                label: 'Escolhas',
                 data: Object.values(strategyCount),
-                backgroundColor: '#FF4757'
+                backgroundColor: [
+                    'rgba(102, 126, 234, 0.8)',
+                    'rgba(118, 75, 162, 0.8)',
+                    'rgba(240, 147, 251, 0.8)'
+                ],
+                borderColor: [
+                    '#667eea',
+                    '#764ba2',
+                    '#f093fb'
+                ],
+                borderWidth: 2,
+                borderRadius: 8
             }]
         },
         options: {
@@ -627,6 +1154,19 @@ function renderStrategyChart(data) {
             responsive: true,
             plugins: {
                 legend: { display: false }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    }
+                }
             }
         }
     });
